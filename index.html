@@ -1,0 +1,367 @@
+cat > /mnt/user-data/outputs/pizza-ready.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>পিজ্জা রেডি! টাইকুন</title>
+<style>
+  :root{
+    --crust:#e8a33d; --crust-dark:#b5701f; --tomato:#d94f30;
+    --cheese:#ffcf56; --basil:#4c7a3d; --cream:#fff6e6; --ink:#3a2317;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:'Segoe UI',system-ui,sans-serif;
+    background:radial-gradient(circle at 20% 10%, #ffe9bd 0%, transparent 40%),
+      linear-gradient(180deg,var(--cream),#ffe6c2 60%,#ffd699);
+    color:var(--ink); min-height:100%; display:flex; flex-direction:column;
+    align-items:center; overflow-x:hidden;
+  }
+  header{ width:100%; max-width:480px; padding:14px 16px 8px; text-align:center; }
+  h1{ margin:0; font-size:1.5rem; color:var(--crust-dark); text-shadow:1px 1px 0 #fff8; }
+  .sub{ font-size:0.8rem; opacity:0.7; margin-top:2px; }
+  .stats{ width:100%; max-width:480px; display:flex; justify-content:space-between;
+    padding:8px 18px; font-weight:600; }
+  .stats .coins{ color:var(--tomato); }
+  .stats .rate{ color:var(--basil); }
+  main{ width:100%; max-width:480px; flex:1; padding:10px 16px 90px; }
+
+  /* ---- Shop scene ---- */
+  .scene{
+    position:relative; height:230px; border-radius:20px; overflow:hidden;
+    margin:10px 0 18px;
+    background:linear-gradient(180deg,#bfe3f5 0%,#bfe3f5 55%,#d9a86c 55%,#c98f52 100%);
+    border:3px solid var(--crust-dark);
+    box-shadow:inset 0 -4px 10px rgba(0,0,0,0.15);
+  }
+  .cloud{ position:absolute; width:34px; height:14px; background:#fff; border-radius:20px; opacity:0.8; }
+  .cloud::before{ content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:-8px; left:6px; }
+  .franchise-flag{
+    position:absolute; top:8px; right:10px; font-size:1.3rem; opacity:0; transform:scale(0.5);
+    transition:all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .franchise-flag.show{ opacity:1; transform:scale(1); }
+  .van{
+    position:absolute; bottom:6px; left:-70px; font-size:1.6rem; opacity:0;
+    transition:opacity 0.3s;
+  }
+  .van.show{ opacity:1; animation:drive 5s linear infinite; }
+  @keyframes drive{ 0%{left:-70px;} 45%{left:60%;} 55%{left:60%;} 100%{left:110%;} }
+  .counter{
+    position:absolute; bottom:0; left:0; right:0; height:70px;
+    background:linear-gradient(180deg,#8a5a2a,#6e4420);
+    border-top:4px solid #5a3618;
+  }
+  .oven{
+    position:absolute; bottom:70px; width:52px; height:60px; border-radius:8px 8px 4px 4px;
+    background:linear-gradient(180deg,#5a5a5a,#333); opacity:0; transform:translateY(10px);
+    transition:all 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .oven::after{
+    content:''; position:absolute; inset:8px 8px 18px 8px; border-radius:6px;
+    background:radial-gradient(circle,#ffcf56,#d94f30);
+  }
+  .oven.show{ opacity:1; transform:translateY(0); }
+  .oven1{ left:14px; }
+  .oven2{ left:74px; }
+  .chef{
+    position:absolute; bottom:70px; width:26px; opacity:0; transform:translateY(14px) scale(0.7);
+    transition:all 0.4s cubic-bezier(.34,1.56,.64,1); text-align:center;
+  }
+  .chef.show{ opacity:1; transform:translateY(0) scale(1); }
+  .chef .head{ width:16px; height:16px; border-radius:50%; background:#e8b98a; margin:0 auto; position:relative; }
+  .chef .hat{ position:absolute; top:-8px; left:1px; width:14px; height:9px; background:#fff; border-radius:6px 6px 0 0; }
+  .chef .body{ width:22px; height:20px; background:var(--basil); border-radius:6px 6px 2px 2px; margin:1px auto 0; }
+  .chef1{ left:150px; }
+  .chef2{ left:180px; }
+  .chef3{ left:210px; }
+  .chef-badge{
+    position:absolute; bottom:66px; left:150px; background:var(--tomato); color:#fff;
+    font-size:0.62rem; font-weight:800; padding:1px 5px; border-radius:8px; opacity:0;
+    transition:opacity 0.3s;
+  }
+  .chef-badge.show{ opacity:1; }
+
+  .dough-wrap{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:5;
+  }
+  #pizza-btn{
+    width:120px;height:120px; border-radius:50%; border:5px solid var(--crust-dark);
+    background:radial-gradient(circle at 35% 30%, var(--cheese), var(--tomato) 65%, var(--crust) 100%);
+    box-shadow:0 6px 0 var(--crust-dark), 0 8px 14px rgba(0,0,0,0.25);
+    cursor:pointer; position:relative; transition:transform 0.06s ease, box-shadow 0.06s ease;
+  }
+  #pizza-btn:active{ transform:translateY(5px); box-shadow:0 1px 0 var(--crust-dark), 0 3px 8px rgba(0,0,0,0.2); }
+  #pizza-btn .slice-line{ position:absolute; top:50%; left:50%; width:2px; height:58px;
+    background:rgba(180,90,30,0.35); transform-origin:top center; }
+  .combo-tag{
+    position:absolute; top:-26px; left:50%; transform:translateX(-50%);
+    font-weight:800; font-size:0.85rem; color:var(--tomato); white-space:nowrap;
+    opacity:0; transition:opacity 0.2s;
+  }
+  .combo-tag.show{ opacity:1; }
+
+  .pizza-label{ text-align:center; margin-top:6px; font-weight:700; color:var(--crust-dark); font-size:0.9rem; }
+  .float{ position:absolute; font-weight:800; color:var(--basil); pointer-events:none;
+    animation:rise 0.8s ease-out forwards; font-size:1.1rem; z-index:9; }
+  @keyframes rise{ from{opacity:1; transform:translateY(0);} to{opacity:0; transform:translateY(-46px);} }
+
+  h2{ font-size:1rem; margin:18px 0 8px; color:var(--crust-dark); border-bottom:2px solid var(--crust); padding-bottom:4px; }
+  .upgrade{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:#fffaf0; border:1px solid #eeddb8; border-radius:14px; padding:10px 12px; margin-bottom:8px; }
+  .upgrade .name{ font-weight:700; font-size:0.92rem; }
+  .upgrade .desc{ font-size:0.76rem; opacity:0.7; margin-top:1px; }
+  .upgrade .level{ font-size:0.72rem; color:var(--basil); margin-top:2px; }
+  .buy-btn{ background:var(--tomato); color:#fff; border:none; border-radius:10px; padding:8px 12px;
+    font-weight:700; font-size:0.82rem; min-width:78px; cursor:pointer; }
+  .buy-btn:disabled{ background:#d8c8ae; cursor:not-allowed; }
+
+  footer{ position:fixed; bottom:0; left:0; right:0;
+    padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px)); text-align:center;
+    font-size:0.72rem; color:#8a6a45; background:linear-gradient(180deg, transparent, #ffe6c2 40%); }
+  #reset-btn, #mute-btn{ background:none; border:1px solid #c69a5e; color:#8a5a2a; border-radius:8px;
+    padding:4px 10px; font-size:0.72rem; margin-left:6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍕 পিজ্জা রেডি!</h1>
+  <div class="sub">দোকান চালান, পিজ্জা বানান, সাম্রাজ্য গড়ুন</div>
+</header>
+
+<div class="stats">
+  <div class="coins">💰 <span id="coins">0</span></div>
+  <div class="rate">⚙ <span id="rate">0</span>/সে</div>
+</div>
+
+<main>
+  <div class="scene" id="scene">
+    <div class="cloud" style="top:10px;left:20px;"></div>
+    <div class="cloud" style="top:22px;left:100px;"></div>
+    <div class="franchise-flag" id="flag">🚩</div>
+    <div class="van" id="van">🚚</div>
+    <div class="chef chef1" id="chef1"><div class="head"><div class="hat"></div></div><div class="body"></div></div>
+    <div class="chef chef2" id="chef2"><div class="head"><div class="hat"></div></div><div class="body"></div></div>
+    <div class="chef chef3" id="chef3"><div class="head"><div class="hat"></div></div><div class="body"></div></div>
+    <div class="chef-badge" id="chefBadge"></div>
+    <div class="oven oven1" id="oven1"></div>
+    <div class="oven oven2" id="oven2"></div>
+    <div class="counter"></div>
+    <div class="dough-wrap">
+      <div class="combo-tag" id="comboTag"></div>
+      <button id="pizza-btn" aria-label="পিজ্জা বানান">
+        <div class="slice-line" style="transform:rotate(0deg)"></div>
+        <div class="slice-line" style="transform:rotate(60deg)"></div>
+        <div class="slice-line" style="transform:rotate(120deg)"></div>
+      </button>
+    </div>
+  </div>
+  <div class="pizza-label">ট্যাপ করে পিজ্জা বানান</div>
+
+  <section class="shop">
+    <h2>কর্মী ও যন্ত্রপাতি</h2>
+    <div id="upgrades"></div>
+  </section>
+</main>
+
+<footer>
+  অগ্রগতি এই ব্রাউজারে সংরক্ষিত হয়
+  <button id="mute-btn">🔊 সাউন্ড</button>
+  <button id="reset-btn">রিসেট</button>
+</footer>
+
+<script>
+(function(){
+  const state = {
+    coins: 0, perClick: 1, muted:false,
+    upgrades: [
+      {id:'chef', name:'সহকারী শেফ', desc:'প্রতি সেকেন্ডে +1 পিজ্জা তৈরি', baseCost:15, cost:15, count:0, cps:1},
+      {id:'oven', name:'দ্বিতীয় ওভেন', desc:'প্রতি সেকেন্ডে +5 পিজ্জা তৈরি', baseCost:100, cost:100, count:0, cps:5},
+      {id:'delivery', name:'ডেলিভারি বয়', desc:'প্রতি সেকেন্ডে +20 পিজ্জা বিক্রি', baseCost:500, cost:500, count:0, cps:20},
+      {id:'franchise', name:'নতুন শাখা', desc:'প্রতি সেকেন্ডে +100 আয়', baseCost:2500, cost:2500, count:0, cps:100},
+      {id:'topping', name:'বিশেষ টপিং', desc:'প্রতি ট্যাপে +1 অতিরিক্ত পিজ্জা', baseCost:250, cost:250, count:0, clickBonus:1},
+    ]
+  };
+
+  const coinsEl = document.getElementById('coins');
+  const rateEl = document.getElementById('rate');
+  const upgradesEl = document.getElementById('upgrades');
+  const pizzaBtn = document.getElementById('pizza-btn');
+  const comboTag = document.getElementById('comboTag');
+
+  // ---- audio ----
+  let audioCtx = null;
+  function ctx(){ if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } return audioCtx; }
+  function tone(freq, dur, type, gainVal, delay){
+    if(state.muted) return;
+    try{
+      const c = ctx();
+      const t0 = c.currentTime + (delay||0);
+      const osc = c.createOscillator(); const gain = c.createGain();
+      osc.type = type||'sine'; osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(gainVal||0.15, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(t0); osc.stop(t0+dur);
+    }catch(e){}
+  }
+  function playTap(){ tone(520,0.09,'triangle',0.12); }
+  function playBuy(){ tone(660,0.09,'square',0.13); tone(880,0.12,'square',0.13,0.09); }
+
+  // ---- combo ----
+  let comboCount = 0, lastTap = 0, comboFadeTimer = null;
+  function comboMultiplier(){ return 1 + Math.min(comboCount,10)*0.1; }
+
+  function totalCps(){ return state.upgrades.reduce((s,u)=> s + u.count*(u.cps||0), 0); }
+  function totalClick(){
+    let c = state.perClick;
+    state.upgrades.forEach(u=>{ if(u.clickBonus) c += u.count*u.clickBonus; });
+    return c;
+  }
+  function fmt(n){
+    n = Math.floor(n);
+    if(n>=1000000) return (n/1000000).toFixed(2)+'M';
+    if(n>=1000) return (n/1000).toFixed(1)+'K';
+    return n.toString();
+  }
+
+  function updateScene(){
+    const chefU = state.upgrades.find(u=>u.id==='chef');
+    const ovenU = state.upgrades.find(u=>u.id==='oven');
+    const vanU = state.upgrades.find(u=>u.id==='delivery');
+    const franU = state.upgrades.find(u=>u.id==='franchise');
+
+    document.getElementById('oven1').classList.toggle('show', true); // main oven always present
+    document.getElementById('oven2').classList.toggle('show', ovenU.count>0);
+
+    const chefEls = [document.getElementById('chef1'),document.getElementById('chef2'),document.getElementById('chef3')];
+    const shown = Math.min(chefU.count,3);
+    chefEls.forEach((el,i)=> el.classList.toggle('show', i<shown));
+    const badge = document.getElementById('chefBadge');
+    if(chefU.count>3){ badge.textContent='+'+(chefU.count-3); badge.classList.add('show'); }
+    else{ badge.classList.remove('show'); }
+
+    document.getElementById('van').classList.toggle('show', vanU.count>0);
+    document.getElementById('flag').classList.toggle('show', franU.count>0);
+  }
+
+  function render(){
+    coinsEl.textContent = fmt(state.coins);
+    rateEl.textContent = fmt(totalCps());
+    upgradesEl.innerHTML = '';
+    state.upgrades.forEach(u=>{
+      const div = document.createElement('div');
+      div.className = 'upgrade';
+      const affordable = state.coins >= u.cost;
+      div.innerHTML = `
+        <div class="info">
+          <div class="name">${u.name}</div>
+          <div class="desc">${u.desc}</div>
+          <div class="level">লেভেল ${u.count}</div>
+        </div>
+        <button class="buy-btn" ${affordable? '' : 'disabled'}>💰 ${fmt(u.cost)}</button>
+      `;
+      div.querySelector('.buy-btn').addEventListener('click', ()=>buy(u.id));
+      upgradesEl.appendChild(div);
+    });
+    updateScene();
+  }
+
+  function buy(id){
+    const u = state.upgrades.find(x=>x.id===id);
+    if(!u || state.coins < u.cost) return;
+    state.coins -= u.cost;
+    u.count += 1;
+    u.cost = Math.ceil(u.baseCost * Math.pow(1.15, u.count));
+    playBuy();
+    save(); render();
+  }
+
+  function makePizza(x,y){
+    const now = Date.now();
+    if(now-lastTap < 700){ comboCount++; } else { comboCount = 0; }
+    lastTap = now;
+    const mult = comboMultiplier();
+    const amount = totalClick()*mult;
+    state.coins += amount;
+    playTap();
+
+    if(comboCount>=2){
+      comboTag.textContent = '🔥 x'+mult.toFixed(1);
+      comboTag.classList.add('show');
+      clearTimeout(comboFadeTimer);
+      comboFadeTimer = setTimeout(()=>comboTag.classList.remove('show'), 900);
+    }
+
+    const f = document.createElement('div');
+    f.className = 'float';
+    f.textContent = '+' + fmt(amount);
+    f.style.left = (x-10) + 'px'; f.style.top = (y-10) + 'px';
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(), 800);
+    save();
+    coinsEl.textContent = fmt(state.coins);
+  }
+
+  pizzaBtn.addEventListener('click', (e)=>{
+    const rect = pizzaBtn.getBoundingClientRect();
+    makePizza(rect.left + rect.width/2, rect.top + rect.height/2);
+    pizzaBtn.style.transform='scale(0.94)';
+    setTimeout(()=>{pizzaBtn.style.transform='';},90);
+  });
+
+  let lastTick = Date.now();
+  setInterval(()=>{
+    const now = Date.now();
+    const dt = (now - lastTick)/1000;
+    lastTick = now;
+    const gain = totalCps()*dt;
+    if(gain>0){ state.coins += gain; coinsEl.textContent = fmt(state.coins); }
+  }, 200);
+  setInterval(render, 1000);
+
+  function save(){
+    try{ localStorage.setItem('pizzaReadySave', JSON.stringify(state)); }catch(e){}
+  }
+  function load(){
+    try{
+      const raw = localStorage.getItem('pizzaReadySave');
+      if(raw){
+        const data = JSON.parse(raw);
+        state.coins = data.coins || 0;
+        if(Array.isArray(data.upgrades)){
+          data.upgrades.forEach(saved=>{
+            const u = state.upgrades.find(x=>x.id===saved.id);
+            if(u){ u.count = saved.count||0; u.cost = saved.cost||u.baseCost; }
+          });
+        }
+      }
+    }catch(e){}
+  }
+
+  document.getElementById('reset-btn').addEventListener('click', ()=>{
+    if(confirm('সব অগ্রগতি মুছে যাবে, আপনি কি নিশ্চিত?')){
+      try{ localStorage.removeItem('pizzaReadySave'); }catch(e){}
+      state.coins = 0;
+      state.upgrades.forEach(u=>{ u.count=0; u.cost=u.baseCost; });
+      render();
+    }
+  });
+  document.getElementById('mute-btn').addEventListener('click', (e)=>{
+    state.muted = !state.muted;
+    e.target.textContent = state.muted ? '🔇 সাউন্ড' : '🔊 সাউন্ড';
+  });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
+HTMLEOF
+echo "written"
